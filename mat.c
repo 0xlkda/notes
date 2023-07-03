@@ -59,6 +59,8 @@ void mat_dot(Mat dst, Mat a, Mat b) {
   }
 }
 
+// #m is stringily of m
+#define MAT_PRINT(m) mat_print(m, #m, 0)
 void mat_print(Mat m, const char *name, size_t padding) {
   printf("%*s%s = [\n", (int)padding, "", name);
   for (size_t i = 0; i < m.rows; ++i) {
@@ -76,15 +78,15 @@ int main(int argc, char *argv[]) {
 
   Mat m = mat_alloc(1, 2);
   mat_fill(m, 1);
-  mat_print(m, "M", 0);
+  MAT_PRINT(m);
 
   Mat n = mat_alloc(2, 2);
   mat_fill(n, 1);
-  mat_print(n, "N", 0);
+  MAT_PRINT(n);
 
   Mat dot = mat_alloc(m.rows, n.cols);
   mat_dot(dot, m, n);
-  mat_print(dot, "Dot MxN", 0);
+  MAT_PRINT(dot);
 
   return EXIT_SUCCESS;
 }
