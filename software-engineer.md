@@ -1,6 +1,12 @@
 # What is a program
 Every computer program is a model, hatched in the mind, of a real or mental process.
 
+# Master software engineer
+Master software engineers have the ability to organize programs so that they can be reasonably sure that the resulting processes will perform the tasks intended.
+They can visualize the behavior of their systems in advance.
+They know how to structure programs so that unanticipated problems do not lead to catastrophic consequences, and when problems do arise, they can debug their programs.
+Well-designed computational systems, like well-designed automobiles or nuclear reactors, are designed in a modular manner, so that the parts can be constructed, replaced, and debugged separately.
+
 # How language matter?
 Languages are powerful tools for thinking.
 Different languages encourage different ways of thinking and lead to different thoughts.
