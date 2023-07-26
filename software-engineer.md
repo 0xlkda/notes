@@ -1,3 +1,6 @@
+# What is a program
+Every computer program is a model, hatched in the mind, of a real or mental process.
+
 # How language matter?
 Languages are powerful tools for thinking.
 Different languages encourage different ways of thinking and lead to different thoughts.
