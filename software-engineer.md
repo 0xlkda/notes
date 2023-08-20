@@ -2,6 +2,9 @@
 The Term of Art
 noun - a word or phrase that has a precise, specialized meaning within a particular field or profession.
 
+# Tips
+Customization through composition
+
 # What is a program
 Every computer program is a model, hatched in the mind, of a real or mental process.
 
