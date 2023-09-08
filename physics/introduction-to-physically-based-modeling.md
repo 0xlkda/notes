@@ -1,0 +1,7 @@
+['Differential Equation Basics', 'http://www.cs.cmu.edu/~baraff/pbm/diffyq.pdf']
+['Particle System Dynamics', 'http://www.cs.cmu.edu/~baraff/pbm/particles.pdf']
+['Energy Functions and Stiffness', 'http://www.cs.cmu.edu/~baraff/pbm/energons.pdf']
+['Continuum Dynamics', 'http://www.cs.cmu.edu/~baraff/pbm/continuators.pdf']
+['Constrained Dynamics', 'http://www.cs.cmu.edu/~baraff/pbm/constraints.pdf']
+['Rigid Body Dynamics I', 'http://www.cs.cmu.edu/~baraff/pbm/rigid1.pdf']
+['Rigid Body Dynamics II', 'http://www.cs.cmu.edu/~baraff/pbm/rigid2.pdf']
