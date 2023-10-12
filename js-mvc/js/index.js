@@ -4,11 +4,11 @@ class Subscribers extends Set {
     this.topics = new Map()
   }
 
-  setTopic(name, notifyFn) {
-    if (this.topics.has(name)) {
-      this.topics.get(name).add(notifyFn)
+  setTopic(topic, notifyFn) {
+    if (this.topics.has(topic)) {
+      this.topics.get(topic).add(notifyFn)
     } else {
-      this.topics.set(name, new Set([notifyFn]))
+      this.topics.set(topic, new Set([notifyFn]))
     }
   }
 
@@ -17,9 +17,9 @@ class Subscribers extends Set {
     let getNotifyFnName = fn => (fn.name || fn.toString()).concat('()')
     let fnNames = Array.from(this.keys()).map(getNotifyFnName)
 
-    // topic level
-    for (const [topic, subscribers] of this.topics) {
-      subscribers.forEach(notify => fnNames.push(`${topic}:${getNotifyFnName(notify)}`))
+    // topics level
+    for (const [topic, notifyFns] of this.topics) {
+      notifyFns.forEach(notify => fnNames.push(`${topic}:${getNotifyFnName(notify)}`))
     }
 
     return fnNames
@@ -52,7 +52,55 @@ const State = {
   }
 }
 
-/* Simple hash function. */
+function repository(topics, notify) {
+  const genId = item => item.id || hash(item)
+
+  // topics.add(topic)(item)
+  topics.set = function(topic) {
+    return function(item) {
+      topics[topic][genId(item)] = item
+      notify(topic)
+    }
+  }
+
+  // topics.remove(topic)(item)
+  topics.delete = function(topic) {
+    return function(item) {
+      delete topics[topic][genId(item)]
+      notify(topic)
+    }
+  }
+
+  // topics.topic.add / remove
+  for (const topic of Object.keys(topics)) {
+    topics[topic].set = topics.set(topic)
+    topics[topic].delete = topics.delete(topic)
+  }
+
+  return topics
+}
+
+// setup State.data topics: foo, bar
+State.data = repository({
+  foo: {},
+  bar: {}
+}, (topic) => State.notify(topic)) 
+
+// subscribe first time
+State.subscribe(renderState)
+State.subscribe(renderFoo, ['foo']) // renderFoo if topic: foo changed
+State.subscribe(renderBar, ['bar']) // renderBar if topic: bar changed
+
+// render initial state
+renderState()
+renderFoo()
+renderBar()
+
+//
+// Everything below is helper functions
+//
+
+// Simple hash function
 function hash(object) {
   var string = JSON.stringify(object)
   var a = 1, c = 0, h, o
@@ -69,39 +117,6 @@ function hash(object) {
   return String(a)
 }
 
-function repository(collection, notify) {
-  const genId = item => item.id || hash(item)
-
-  // collection.add(topic)(item)
-  collection.add = function(topic) {
-    return function(item) {
-      collection[topic][genId(item)] = item
-      notify(topic)
-    }
-  }
-
-  // collection.remove(topic)(item)
-  collection.remove = function(topic) {
-    return function(item) {
-      delete collection[topic][genId(item)]
-      notify(topic)
-    }
-  }
-
-  // collection.topic.add / remove
-  for (const topic of Object.keys(collection)) {
-    collection[topic].add = collection.add(topic)
-    collection[topic].remove = collection.remove(topic)
-  }
-
-  return collection
-}
-
-State.data = repository({
-  foo: {},
-  bar: {}
-}, (target) => State.notify(target)) 
-
 function renderFoo() {
   document
     .getElementById('foo')
@@ -114,42 +129,44 @@ function renderBar() {
     .innerHTML = (`<pre>${JSON.stringify(State.data.bar, null, 2)}</pre><hr/>`)
 }
 
-function debug(info) {
+function renderInfo(info) {
   document
     .getElementById('debug')
     .innerHTML = (`<pre>${JSON.stringify(info, null, 2)}</pre><hr/>`)
 }
 
-function debugState() {
-  debug(State)
+function renderState() {
+  renderInfo(State)
 }
-
-// subscribe first time
-State.subscribe(debugState)
-State.subscribe(renderFoo, ['foo'])
-State.subscribe(renderBar, ['bar'])
-debugState()
 
 document.getElementById('subscribe')
   .onclick = () => {
-    State.subscribe(debugState)
+    State.subscribe(renderState)
     State.subscribe(renderFoo, ['foo'])
     State.subscribe(renderBar, ['bar'])
 
     document.getElementById('toggle-foo').checked = true
     document.getElementById('toggle-bar').checked = true
-    debugState()
+
+    // render latest state
+    renderState()
+    renderFoo()
+    renderBar()
   }
 
 document.getElementById('unsubscribe')
   .onclick = () => {
-    State.unsubscribe(debugState)
+    State.unsubscribe(renderState)
     State.unsubscribe(renderFoo)
     State.unsubscribe(renderBar)
 
     document.getElementById('toggle-foo').checked = false
     document.getElementById('toggle-bar').checked = false
-    debugState()
+
+    // render latest state
+    renderState()
+    renderFoo()
+    renderBar()
   }
 
 let fooId = 1
@@ -165,14 +182,14 @@ document.getElementById('toggle-foo')
       : 'Subscribe Foo'
 
     document.getElementById('toggle-foo-label').innerText = text
-    debugState()
+    renderFoo()
   }
 
-document.getElementById('add-foo')
-  .onclick = () => State.data.foo.add({ name: 'foo_' + (fooId++) })
+document.getElementById('set-foo')
+  .onclick = () => State.data.foo.set({ name: 'foo_' + (fooId++) })
 
-document.getElementById('remove-foo')
-  .onclick = () => State.data.foo.remove({ name: 'foo_' + (--fooId) })
+document.getElementById('delete-foo')
+  .onclick = () => State.data.foo.delete({ name: 'foo_' + (--fooId) })
 
 let barId = 1
 let subscribedBar = true
@@ -187,11 +204,11 @@ document.getElementById('toggle-bar')
       : 'Subscribe Bar'
 
     document.getElementById('toggle-bar-label').innerText = text
-    debugState()
+    renderBar()
   }
 
-document.getElementById('add-bar')
-  .onclick = () => State.data.bar.add({ name: 'bar_' + (barId++) })
+document.getElementById('set-bar')
+  .onclick = () => State.data.bar.set({ name: 'bar_' + (barId++) })
 
-document.getElementById('remove-bar')
-  .onclick = () => State.data.bar.remove({ name: 'bar_' + (--barId) })
+document.getElementById('delete-bar')
+  .onclick = () => State.data.bar.delete({ name: 'bar_' + (--barId) })
