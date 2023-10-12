@@ -41,13 +41,13 @@ const State = {
       topic.delete(callbackFn)
     })
   },
-  notify(target) { 
+  notify(topic) { 
     // notify all
     this.subscribers.forEach(notify => notify())
 
     // notify topic subscribers
-    if (target && this.subscribers.topics.has(target))  {
-      this.subscribers.topics.get(target).forEach(notify => notify())
+    if (topic && this.subscribers.topics.has(topic))  {
+      this.subscribers.topics.get(topic).forEach(notify => notify())
     }
   }
 }
@@ -72,26 +72,26 @@ function hash(object) {
 function repository(collection, notify) {
   const genId = item => item.id || hash(item)
 
-  // collection.add(target)(item)
-  collection.add = function(target) {
+  // collection.add(topic)(item)
+  collection.add = function(topic) {
     return function(item) {
-      collection[target][genId(item)] = item
-      notify(target)
+      collection[topic][genId(item)] = item
+      notify(topic)
     }
   }
 
-  // collection.remove(target)(item)
-  collection.remove = function(target) {
+  // collection.remove(topic)(item)
+  collection.remove = function(topic) {
     return function(item) {
-      delete collection[target][genId(item)]
-      notify(target)
+      delete collection[topic][genId(item)]
+      notify(topic)
     }
   }
 
-  // collection.target.add / remove
-  for (const target of Object.keys(collection)) {
-    collection[target].add = collection.add(target)
-    collection[target].remove = collection.remove(target)
+  // collection.topic.add / remove
+  for (const topic of Object.keys(collection)) {
+    collection[topic].add = collection.add(topic)
+    collection[topic].remove = collection.remove(topic)
   }
 
   return collection
@@ -148,14 +148,14 @@ document.getElementById('unsubscribe')
 
 let fooId = 1
 document.getElementById('add-foo')
-  .onclick = () => State.data.add('foo')({ name: 'foo_' + (fooId++) })
+  .onclick = () => State.data.foo.add({ name: 'foo_' + (fooId++) })
 
 document.getElementById('remove-foo')
-  .onclick = () => State.data.remove('foo')({ name: 'foo_' + (--fooId) })
+  .onclick = () => State.data.foo.remove({ name: 'foo_' + (--fooId) })
 
 let barId = 1
 document.getElementById('add-bar')
-  .onclick = () => State.data.add('bar')({ name: 'bar_' + (barId++) })
+  .onclick = () => State.data.bar.add({ name: 'bar_' + (barId++) })
 
 document.getElementById('remove-bar')
-  .onclick = () => State.data.remove('bar')({ name: 'bar_' + (--barId) })
+  .onclick = () => State.data.bar.remove({ name: 'bar_' + (--barId) })
