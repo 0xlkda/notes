@@ -9,14 +9,28 @@
   </head>
   <body>
     <div>
-      <button id="subscribe">Subscribe</button>
-      <button id="unsubscribe">Unsubscribe</button>
+      <button id="subscribe">Subscribe All</button>
+      <button id="unsubscribe">Unsubscribe All</button>
+    </div>
+
+    <div>
+      <label for="toggle-foo">
+        <span id="toggle-foo-label" >Unsubscribe Foo</span>
+        <input type="checkbox" id="toggle-foo" checked="true" />
+      </label>
       <button id="add-foo">Add Foo</button>
       <button id="remove-foo">Remove Foo</button>
+    </div>
+
+    <div>
+      <label for="toggle-bar">
+        <span id="toggle-bar-label" >Unsubscribe Bar</span>
+        <input type="checkbox" id="toggle-bar" checked="true" />
+      </label>
       <button id="add-bar">Add Bar</button>
       <button id="remove-bar">Remove Bar</button>
     </div>
-    <hr/>
+    <hr />
     <div id="foo"></div>
     <div id="bar"></div>
     <div id="debug"></div>

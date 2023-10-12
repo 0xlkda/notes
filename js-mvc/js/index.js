@@ -102,13 +102,13 @@ State.data = repository({
   bar: {}
 }, (target) => State.notify(target)) 
 
-function renderA() {
+function renderFoo() {
   document
     .getElementById('foo')
     .innerHTML = (`<pre>${JSON.stringify(State.data.foo, null, 2)}</pre><hr/>`)
 }
 
-function renderB() {
+function renderBar() {
   document
     .getElementById('bar')
     .innerHTML = (`<pre>${JSON.stringify(State.data.bar, null, 2)}</pre><hr/>`)
@@ -126,27 +126,48 @@ function debugState() {
 
 // subscribe first time
 State.subscribe(debugState)
-State.subscribe(renderA, ['a'])
-State.subscribe(renderB, ['b'])
+State.subscribe(renderFoo, ['foo'])
+State.subscribe(renderBar, ['bar'])
 debugState()
 
 document.getElementById('subscribe')
   .onclick = () => {
     State.subscribe(debugState)
-    State.subscribe(renderA, ['a'])
-    State.subscribe(renderB, ['b'])
+    State.subscribe(renderFoo, ['foo'])
+    State.subscribe(renderBar, ['bar'])
+
+    document.getElementById('toggle-foo').checked = true
+    document.getElementById('toggle-bar').checked = true
     debugState()
   }
 
 document.getElementById('unsubscribe')
   .onclick = () => {
     State.unsubscribe(debugState)
-    State.unsubscribe(renderA)
-    State.unsubscribe(renderB)
+    State.unsubscribe(renderFoo)
+    State.unsubscribe(renderBar)
+
+    document.getElementById('toggle-foo').checked = false
+    document.getElementById('toggle-bar').checked = false
     debugState()
   }
 
 let fooId = 1
+let subscribedFoo = true
+document.getElementById('toggle-foo')
+  .onchange = (e) => {
+    e.target.checked 
+      ? State.subscribe(renderFoo, ['foo'])
+      : State.unsubscribe(renderFoo)
+
+    const text = e.target.checked 
+      ? 'Unsubscribe Foo'
+      : 'Subscribe Foo'
+
+    document.getElementById('toggle-foo-label').innerText = text
+    debugState()
+  }
+
 document.getElementById('add-foo')
   .onclick = () => State.data.foo.add({ name: 'foo_' + (fooId++) })
 
@@ -154,6 +175,21 @@ document.getElementById('remove-foo')
   .onclick = () => State.data.foo.remove({ name: 'foo_' + (--fooId) })
 
 let barId = 1
+let subscribedBar = true
+document.getElementById('toggle-bar')
+  .onchange = (e) => {
+    e.target.checked 
+      ? State.subscribe(renderBar, ['bar'])
+      : State.unsubscribe(renderBar)
+
+    const text = e.target.checked 
+      ? 'Unsubscribe Bar'
+      : 'Subscribe Bar'
+
+    document.getElementById('toggle-bar-label').innerText = text
+    debugState()
+  }
+
 document.getElementById('add-bar')
   .onclick = () => State.data.bar.add({ name: 'bar_' + (barId++) })
 
