@@ -1,5 +1,8 @@
 # [11/04/2023] learning Computer Graphics
 
+Right-Hand is the World 
+Left-hand is the Eye
+
 CPU - Central Processing Unit
 
 ## GPU (Graphics Processing Unit)
@@ -247,10 +250,125 @@ programs are called vertex shader and fragment shader.
 
 Note: (Direct3D uses the term "pixel" for "fragment".)
 
-
-
 ## Vertex Processing
+The process used to produce a 3D scene on the display in Computer Graphics is
+like taking a photograph with a camera. It involves four transformations:
 
+1. Arrange the objects (or models, or avatar) in the world (Model Transformation or World transformation).
+2. Position and orientation the camera (View transformation).
+3. Select a camera lens (wide angle, normal or telescopic), adjust the focus length and zoom factor to set the camera's field of view (Projection transformation).
+4. Print the photo on a selected area of the paper (Viewport transformation) - in rasterization stage
+
+![Coordinates Transform Pipeline](Graphics3D_CoordTransform.png) 
+
+A transform converts a vertex V from one space (or coordinate system) to
+another space V'. In computer graphics, transform is carried by multiplying the
+vector with a transformation matrix, i.e., V' = M V.
+
+### Model Transform (or Local Transform, or World Transform)
+![World Space, Local Space](Graphics3D_LocalSpace.png) 
+
+Each object (or model or avatar) in a 3D scene is typically drawn in its own
+coordinate system, known as its model space (or local space, or object space).
+As we assemble the objects, we need to transform the vertices from their local
+spaces to the world space, which is common to all the objects. This is known as
+the world transform.
+
+The world transform consists of a series of scaling (scale the object to match
+the dimensions of the world), rotation (align the axes), and translation (move
+the origin).
+
+Rotation and scaling belong to a class of transformation called linear
+transformation (by definition, a linear transformation preserves vector
+addition and scalar multiplication). Linear transform and translation form the
+so-called affine transformation. Under an affine transformation, a straight
+line remains a straight line and ratios of distances between points are
+preserved.
+
+Note:
+In OpenGL, a vertex V at (x,y,z) is represented as a 3x1 column vector.
+    |x|
+V = |y|
+    |z|
+
+Other systems, such as Direct3D, use a row vector to represent a vertex.
+
+**Scaling** 
+3D scaling can be represented in a 3x3 matrix:
+
+                |ax 0  0 |
+S(ax,ay,az) =   |0  ay 0 |
+                |0  0  az|
+
+![3D Scaling](Graphics3D_Scaling.png) 
+
+where ax, ay and az represent the scaling factors in x, y and z direction,
+respectively. If all the factors are the same, it is called uniform scaling.
+
+We can obtain the transformed result V' of vertex V via matrix multiplication, as follows:
+
+            |ax 0  0 | |x|   |axx|
+V' = SV =   |0  ay 0 | |y| = |ayy|
+            |0  0  az| |z|   |azz|
+
+![V' = SV](Graphics3D_ScalingExample.png) 
+
+**Rotation** 
+3D rotation operates about an axis of rotation (2D rotation operates about a
+center of rotation). 3D Rotations about the x, y and z axes for an angle θ
+(measured in counter-clockwise manner) can be represented in the following 3x3
+matrices:
+![3D Rotation](Graphics3D_Rotation.png) 
+
+The rotational angles about x, y and z axes, denoted as θx, θy and θz, are
+known as Euler angles, which can be used to specify any arbitrary orientation
+of an object. The combined transform is called Euler transform.
+
+**Translation** 
+Translation does not belong to linear transform, but can be modeled via a
+vector addition, as follows:
+![Translation](Graphics3D_Translation3D.png)
+
+Fortunately, we can represent translation using a 4x4 matrices and obtain the
+transformed result via matrix multiplication, if the vertices are represented
+in the so-called 4-component homogeneous coordinates (x, y, z, 1), with an
+additional forth w-component of 1. We shall describe the significance of the
+w-component later in projection transform. In general, if the w-component is
+not equal to 1, then (x, y, z, w) corresponds to Cartesian coordinates of
+(x/w, y/w, z/w). If w=0, it represents a vector, instead of a point (or vertex).
+
+Using the 4-component homogeneous coordinates, translation can be represented
+in a 4x4 matrix, as follows:
+![Translation](Graphics3D_TranslationMatrix.png) 
+
+The transformed vertex V' can again be computed via matrix multiplication:
+![Translation Example](Graphics3D_TranslationExample.png) 
+
+**Summary of Affine Transformations** 
+We rewrite the scaling and rotation into 4x4 matrices using the homogenous
+coordinates.
+![Affine Transformations](Graphics3D_AffineTransforms.png) 
+
+**Successive Transforms** 
+A series of successive affine transforms (T1, T2, T3, ...) operating on a vertex V
+can be computed via concatenated matrix multiplications V' = ...T3 T2 T1 V
+
+The matrices can be combined before applying to the vertex because matrix
+multiplication is associative, i.e., T3 (T2 (T1 V) ) = (T3 T2 T1) V
+
+**Transformation of Vertex-Normal** 
+Recall that a vector has a vertex-normal, in addition to (x, y, z) position and color.
+
+Suppose that M is a transform matrix, it can be applied to vertex-normal only
+if the transforms does not include non-uniform scaling. Otherwise, the
+transformed normal will not be orthogonal to the surface. For non-uniform
+scaling, we could use (M^-1)^T as the transform matrix, which ensure that the
+transformed normal remains orthogonal.
+
+### View Transform
+After the world transform, all the objects are assemble into the world space.
+We shall now place the camera to capture the view.
+![Camera Space](Graphics3D_CameraSpace.png) 
 
 ## OpenGL
 API for c++ program to do graphics in conjunction with a GPU.
@@ -271,7 +389,8 @@ give DrawCommand
 
 GPU
 (run first) Vertex Shaders - a program that run on every vertex
-Fragment Shaders (Pixel Shaders) - a program that run on each pixel inside each shape boundary (triangle, line..)
+Fragment Shaders (Pixel Shaders) - a program that run on each pixel inside each
+shape boundary (triangle, line..)
 
 ### Points, Lines, & Triangle
 create a array for vertices
@@ -293,7 +412,7 @@ Draw modes
 GL_LINES - create line between each pairs of vertices {v0, v1} {v2, v3} {v4, v5}
 GL_LINE_STRIP - create line between {v1, v2} {v3, v4} plus lines from GL_LINES
 GL_LINE_LOOP - create line between {v0, v5} plus GL_LINE_STRIP
-[glDrawArrays Line](./glDrawArrays_line.png) 
+![glDrawArrays Line](glDrawArrays_line.png) 
 
 ### Draw a triangle
 tell openGL to handle different logic by faces.
@@ -302,16 +421,16 @@ counter-clockwise; the "Back" faces is going clockwise.
 
 Draw modes
 GL_TRIANGLES - create triangles {v0, v1, v2} {v3, v4, v5}
-[glDrawArrays Triangle](./glDrawArrays_triangle.png) 
+![glDrawArrays Triangle](glDrawArrays_triangle.png) 
 
 GL_TRIANGLE_FAN
-[glDrawArrays Triangle Fan](./glDrawArrays_triangle_fan.png) 
+![glDrawArrays Triangle Fan](glDrawArrays_triangle_fan.png) 
 
 GL_TRIANGLE_STRIP
-[glDrawArrays Triangle Strip](./glDrawArrays_triangle_strip.png) 
+![glDrawArrays Triangle Strip](glDrawArrays_triangle_strip.png) 
 
 Example
-[Triangle to Sphere](./example_triangle_to_sphere.png) 
+![Triangle to Sphere](example_triangle_to_sphere.png) 
 
 ### Culling, Hidden Surface Algorithms, Animation
 ![Culling](./culling.jpg) 
