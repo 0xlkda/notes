@@ -296,9 +296,11 @@ Other systems, such as Direct3D, use a row vector to represent a vertex.
 **Scaling** 
 3D scaling can be represented in a 3x3 matrix:
 
+```
                 |ax 0  0 |
 S(ax,ay,az) =   |0  ay 0 |
                 |0  0  az|
+```
 
 ![3D Scaling](Graphics3D_Scaling.png) 
 
@@ -307,9 +309,11 @@ respectively. If all the factors are the same, it is called uniform scaling.
 
 We can obtain the transformed result V' of vertex V via matrix multiplication, as follows:
 
+```
             |ax 0  0 | |x|   |axx|
 V' = SV =   |0  ay 0 | |y| = |ayy|
             |0  0  az| |z|   |azz|
+```
 
 ![V' = SV](Graphics3D_ScalingExample.png) 
 
