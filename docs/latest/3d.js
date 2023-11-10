@@ -119,8 +119,8 @@ function drawCube(angle, position) {
 
   function vertexProcessing(vertex) {
     vertex = scale(vertex, 50)
-    vertex = rotateX(vertex, -30)
-    vertex = rotateY(vertex, -30)
+    vertex = rotateX(vertex, -angle)
+    vertex = rotateY(vertex, -angle)
     vertex = rotateZ(vertex, 0)
     vertex = translate(vertex, origin)
     return vertex
