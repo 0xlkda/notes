@@ -374,8 +374,99 @@ After the world transform, all the objects are assemble into the world space.
 We shall now place the camera to capture the view.
 ![Camera Space](Graphics3D_CameraSpace.png) 
 
+**Positioning the Camera**
+In 3D graphics, we position the camera onto the world space by specifying three
+view parameters: EYE, AT and UP, in world space.
+
+1. The point EYE (ex, ey, ez) defines the location of the camera.
+2. The vector AT (ax, ay, az) denotes the direction where the camera is aiming
+   at, usually at the center of the world or an object.
+3. The vector UP (ux, uy, uz) denotes the upward orientation of the camera
+   roughly. UP is typically coincided with the y-axis of the world space. UP is
+   roughly orthogonal to AT, but not necessary. As UP and AT define a plane, we
+   can construct an orthogonal vector to AT in the camera space.
+
+Notice that the 9 values actually produce 6 degrees of freedom to position and
+orientate the camera, i.e., 3 of them are not independent.
+
+**OpenGL**          
+In OpenGL, we can use the GLU function gluLookAt() to position the camera:
+```
+void gluLookAt(GLdouble xEye, GLdouble yEye, GLdouble zEye, 
+               GLdouble xAt,  GLdouble yAt,  GLdouble zAt,
+               GLdouble xUp,  GLdouble yUp,  GLdouble zUp)
+```
+
+The default settings of gluLookAt() is:
+```
+gluLookAt(0.0, 0.0,  0.0,
+          0.0, 0.0, -100.0,
+          0.0, 1.0,  0.0)
+```
+
+That is, the camera is positioned at the origin (0, 0, 0), aimed into the
+screen (negative z-axis), and faced upwards (positive y-axis). To use the
+default settings, you have to place the objects at negative z-values.
+
+![Default Camera](OpenGLDefaultCamera.png) 
+
+**Computing the Camera Coordinate** 
+From EYE, AT and UP, we first form the coordinate (xc, yc, zc) for the camera,
+relative to the world space. We fix zc to be the opposite of AT, i.e., AT is
+pointing at the -zc. We can obtain the direction of xc by taking the
+cross-product of AT and UP. Finally, we get the direction of yc by taking the
+cross-product of xc and zc. Take note that UP is roughly, but not necessarily,
+orthogonal to AT.
+
+![Camera Coordinate](Graphics3D_CameraCoord.png) 
+
+**Transforming from World Space to Camera Space** 
+Now, the world space is represented by standard orthonormal bases (e1, e2, e3),
+where e1=(1, 0, 0), e2=(0, 1, 0) and e3=(0, 0, 1), with origin at O=(0, 0, 0).
+The camera space has orthonormal bases (xc, yc, zc) with origin at EYE=(ex, ey,
+ez).
+
+It is much more convenience to express all the coordinates in the camera space.
+This is done via view transform.
+
+The view transform consists of two operations: a translation (for moving EYE to
+the origin), followed by a rotation (to axis the axes):
+
+![Translation & Rotation](Graphics3D_ViewTranslationRotation.png) 
+
+**The View Matrix** 
+We can combine the two operations into one single View Matrix:
+![View Matrix](Graphics3D_ViewMatrix.png) 
+
+**Model-View Transform** 
+In Computer Graphics, moving the objects relative to a fixed camera (Model
+transform), and moving the camera relative to a fixed object (View transform)
+produce the same image, and therefore are equivalent. OpenGL, therefore,
+manages the Model transform and View transform in the same manner on a
+so-called Model-View matrix. Projection transformation (in the next section) is
+managed via a Projection matrix.
+
+### Projection Transform - Perspective Projection
+Once the camera is positioned and oriented, we need to decide what it can see
+(analogous to choosing the camera's field of view by adjusting the focus length
+and zoom factor), and how the objects are projected onto the screen. This is
+done by selecting a projection mode (perspective or orthographic) and
+specifying a viewing volume or clipping volume. Objects outside the clipping
+volume are clipped out of the scene and cannot be seen.
+
+
 ## OpenGL
-API for c++ program to do graphics in conjunction with a GPU.
+OpenGL is a software interface to graphics hardware. It is designed as a
+hardware-independent interface to be used for many different hardware
+platforms. OpenGL programs can also work across a network (client-server
+paradigm) even if the client and server are different kinds of computers. The
+client in OpenGL is a computer on which an OpenGL program actually executes,
+and the server is a computer that performs the drawings.
+
+OpenGL uses the prefix gl for core OpenGL commands and glu for commands in
+OpenGL Utility Library. Similarly, OpenGL constants begin with GL_ and use all
+capital letters. OpenGL also uses suffix to specify the number of arguments and
+data type passed to a OpenGL call.
 
 GPU - may have 1000's cores - run small programs called shaders.
 
