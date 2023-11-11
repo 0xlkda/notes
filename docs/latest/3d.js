@@ -1,5 +1,6 @@
 var PI = Math.PI
 var toRadians = (degree) => degree * PI / 180
+
 const canvas = document.getElementById('canvas')
 const ctx = canvas.getContext('2d')
 
@@ -58,7 +59,7 @@ var VIEW_CENTER = new Point3D({
 VIEW_CENTER.type = 'VIEW_CENTER'
 VIEW_CENTER.color = 'gray'
 
-function makeCube(origin) {
+function makeCube() {
   var p1 = new Point3D({x:-1.0, y:-1.0, z: 1.0, label: 'p1'})
   var p2 = new Point3D({x: 1.0, y:-1.0, z: 1.0, label: 'p2'})
   var p3 = new Point3D({x: 1.0, y: 1.0, z: 1.0, label: 'p3'})
@@ -72,9 +73,9 @@ function makeCube(origin) {
   return [p1, p2, p3, p4, p5, p6, p7, p8]
 }
 
-function makeXYZ(origin) {
+function makeXYZ() {
   var x0 = new Point3D({ x:1, y:0, z:0, color:'red', label:'X' })
-  var y0 = new Point3D({ x:0, y:1, z:0, color:'blue', label:'Y' })
+  var y0 = new Point3D({ x:0, y:-1, z:0, color:'blue', label:'Y' })
   var z0 = new Point3D({ x:0, y:0, z:1, color:'green', label:'Z' })
   var vertices = [x0, y0, z0]
   return vertices
