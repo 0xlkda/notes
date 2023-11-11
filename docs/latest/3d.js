@@ -255,25 +255,37 @@ function loop() {
 
 loop(0)
 
-var lastMouseX = 0, lastMouseY = 0
+// PC DEVICE
+var lastPositionX = 0, lastPositionY = 0
 canvas.addEventListener('mousedown', (ev) => {
-  lastMouseX = ev.clientX
-  lastMouseY = ev.clientY
+  lastPositionX = ev.clientX
+  lastPositionY = ev.clientY
   canvas.style.cursor = 'grabbing'
-  canvas.addEventListener('mousemove', mouseMoved)
+  canvas.addEventListener('mousemove', pointerMoved)
 })
 
 canvas.addEventListener('mouseup', () => {
   canvas.style.cursor = 'pointer'
-  canvas.removeEventListener('mousemove', mouseMoved)
+  canvas.removeEventListener('mousemove', pointerMoved)
 })
 
-function mouseMoved(ev) {
-  var deltaX = ev.pageX - lastMouseX
-  var deltaY = ev.pageY - lastMouseY
+// TOUCH DEVICE
+canvas.addEventListener('pointerdown', (ev) => {
+  lastPositionX = ev.clientX
+  lastPositionY = ev.clientY
+  canvas.addEventListener('pointermove', pointerMoved)
+})
 
-  lastMouseX = ev.pageX
-  lastMouseY = ev.pageY
+canvas.addEventListener('pointerup', () => {
+  canvas.removeEventListener('pointermove', pointerMoved)
+})
+
+function pointerMoved(ev) {
+  var deltaX = ev.pageX - lastPositionX
+  var deltaY = ev.pageY - lastPositionY
+
+  lastPositionX = ev.pageX
+  lastPositionY = ev.pageY
 
   angleY -= deltaX * -0.5
   angleX += deltaY * -0.5
