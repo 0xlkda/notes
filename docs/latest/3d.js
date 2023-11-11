@@ -1,3 +1,4 @@
+var PADDING = 10
 var PI = Math.PI
 var toRadians = (degree) => degree * PI / 180
 
@@ -13,24 +14,23 @@ function Point3D({x, y, z, color, label}) {
   this.label = label || ''
 }
 
-function draw2DPoint(point) {
+function draw2DPoint(point, showLabel = true) {
   var x = point.x
   var y = point.y
 
   ctx.save()
-  if (point.label) {
+
+  if (showLabel && point.label) {
     ctx.fillStyle = point.color
     ctx.fillText(point.label, x, y)
   } else {
     ctx.strokeStyle = point.color
-    ctx.beginPath()
     ctx.arc(x, y, 2, 0, 2 * PI)
-    ctx.stroke()
   }
   ctx.restore()
 }
 
-function draw2DLine(p1, p2, showPoint = true) {
+function draw2DLine(p1, p2, showLabel = true) {
   var x0 = p1.x
   var y0 = p1.y
   var x1 = p2.x
@@ -43,7 +43,7 @@ function draw2DLine(p1, p2, showPoint = true) {
   ctx.lineTo(x1, y1)
   ctx.stroke()
 
-  if (showPoint) {
+  if (showLabel) {
     draw2DPoint(p1)
     draw2DPoint(p2)
   }
@@ -81,39 +81,39 @@ function makeXYZ() {
   return vertices
 }
 
-function drawCube(angle, position) {
-  var origin = position
-  var xyz = makeXYZ(origin)
-  var cube = makeCube(origin)
-  var cubeTranslated = []
+function vertexProcessing(vertex, ratio, angle, position) {
+  vertex = scale(vertex, ratio)
+  vertex = rotate(vertex, angle)
+  vertex = translate(vertex, position)
+  return vertex
+}
 
-  function vertexProcessing(vertex) {
-    vertex = scale(vertex, 100)
-    vertex = rotate(vertex, angle)
-    vertex = translate(vertex, origin)
-    return vertex
+function drawCube(cube, size, angle, position, showCoords = false, showCorners = false) {
+  var cube = cube.map(vertex => vertexProcessing(vertex, size, angle, position))
+  drawFaces(cube)
+
+  if (showCorners) {
+    for (var vertex of cube) {
+      draw2DPoint(vertex)
+    }
   }
 
-  for (var vertex of cube) {
-    vertex = vertexProcessing(vertex)
-    draw2DPoint(vertex)
-    cubeTranslated.push(vertex)
+  if (showCoords) {
+    var xyz = makeXYZ().map(vertex => vertexProcessing(vertex, size / 2, angle, position))
+    for (var vertex of xyz) {
+      draw2DLine(position, vertex)
+    }
   }
+}
 
-  // faces
-  var [p1, p2, p3, p4, p5, p6, p7, p8] = cubeTranslated
+function drawFaces(cube) {
+  var [p1, p2, p3, p4, p5, p6, p7, p8] = cube
   drawFace(p1, p2, p3, p4)
   drawFace(p2, p6, p7, p3)
   drawFace(p3, p4, p8, p7)
   drawFace(p4, p1, p5, p8)
   drawFace(p5, p6, p7, p8)
   drawFace(p6, p5, p1, p2)
-
-  // xyz
-  for (var vertex of xyz) {
-    vertex = vertexProcessing(vertex)
-    draw2DLine(origin, vertex)
-  }
 }
 
 function drawFace(p1, p2, p3, p4) {
@@ -122,7 +122,6 @@ function drawFace(p1, p2, p3, p4) {
   draw2DLine(p3, p4, false)
   draw2DLine(p4, p1, false)
 }
-
 
 var Vec3 = (x, y, z) => {
   var vec = [x, y, z]
@@ -219,6 +218,7 @@ var rotate = (point, angle) => {
   var XY = product_mat3_mat3(MAT3_ROTATE_X(radianX), MAT3_ROTATE_Y(radianY))
   var XYZ = product_mat3_mat3(MAT3_ROTATE_Z(radianZ), XY)
   var [x, y, z] = multiply_mat3_vec3(XYZ, point)
+
   return new Point3D({...point, x, y, z})
 }
 
@@ -231,8 +231,8 @@ var translate = (from, to) => {
 }
 
 var angle = 0
-var angleX = 0
-var angleY = 0
+var angleX = -30
+var angleY = -30
 var angleZ = 0
 var translatedX = VIEW_CENTER.x
 var translatedY = VIEW_CENTER.y
@@ -241,16 +241,23 @@ var translatedZ = VIEW_CENTER.z
 function loop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  var PIVOT_POINT = Vec3(0, 0, 0)
-  PIVOT_POINT.label = 'PIVOT'
-  PIVOT_POINT.color = 'pink'
+  var cube1 = makeCube()
+  var cube2 = makeCube()
 
-  var MARKER = Vec3(translatedX, translatedY, translatedZ)
-  PIVOT_POINT = translate(PIVOT_POINT, MARKER)
+  drawCube(
+    cube1,
+    50,
+    angle,
+    Vec3(translatedX, translatedY, translatedZ),
+  )
 
-  draw2DPoint(VIEW_CENTER)
-  draw2DPoint(PIVOT_POINT)
-  drawCube(angle, PIVOT_POINT)
+  drawCube(
+    cube2,
+    100,
+    angle + 180,
+    Vec3(translatedX, translatedY, translatedZ)
+  )
+
   // requestAnimationFrame(loop)
 }
 
