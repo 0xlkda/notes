@@ -2,6 +2,10 @@
 The Term of Art
 noun - a word or phrase that has a precise, specialized meaning within a particular field or profession.
 
+# Software architecture
+No architecture is often the best architecture in the early days of a system.
+This isn’t to say don’t implement good software practices, but don’t spend weeks and months attempting to architect a complex system that you don’t yet know.
+
 # Tips
 Customization through composition
 

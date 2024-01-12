@@ -1,9 +1,19 @@
-var PADDING = 10
 var PI = Math.PI
-var toRadians = (degree) => degree * PI / 180
+var toRadians = (degrees) => degrees * PI / 180
+var toDegrees = (radians) => radians * 180 / PI
+
+var VIEW_WIDTH = 800
+var VIEW_HEIGHT = 600
+var FOV = 85
+var DISTANCE = 100
+var PADDING = 10
 
 const canvas = document.getElementById('canvas')
 const ctx = canvas.getContext('2d')
+
+function transform2Dto3D(vec2, vec3, cosPan, sinPan, cosTilt, sinTilt) {
+  return vec3
+}
 
 // Create a 3D point
 function Point3D({x, y, z, color, label}) {
@@ -37,7 +47,9 @@ function draw2DLine(p1, p2, showLabel = true) {
   var y1 = p2.y
 
   ctx.save()
-  ctx.strokeStyle = p2.color
+
+  ctx.lineWidth = 2
+  ctx.strokeStyle = p2.color || 'lightgrey'
   ctx.beginPath()
   ctx.moveTo(x0, y0)
   ctx.lineTo(x1, y1)
@@ -94,7 +106,7 @@ function drawCube(cube, size, angle, position, showCoords = false, showCorners =
 
   if (showCorners) {
     for (var vertex of cube) {
-      draw2DPoint(vertex)
+      draw2DPoint(vertex, showCorners)
     }
   }
 
@@ -205,34 +217,49 @@ function multiply_mat3_vec3(from, to) {
   return [x, y, z]
 }
 
-var scale = (point, ratio) => {
+function scale(point, ratio) {
   var [x, y, z] = multiply_mat3_vec3(MAT3_ZERO, point).map(x => x * ratio)
-  return new Point3D({...point, x, y, z})
+  return new Point3D({ ...point, x, y, z })
 }
 
-var rotate = (point, angle) => {
+function rotate(point, angle) {
   var radianX = toRadians(angle + angleX)
   var radianY = toRadians(angle + angleY)
   var radianZ = toRadians(angle + angleZ)
 
-  var XY = product_mat3_mat3(MAT3_ROTATE_X(radianX), MAT3_ROTATE_Y(radianY))
-  var XYZ = product_mat3_mat3(MAT3_ROTATE_Z(radianZ), XY)
-  var [x, y, z] = multiply_mat3_vec3(XYZ, point)
+  var ZY = product_mat3_mat3(MAT3_ROTATE_Z(radianZ), MAT3_ROTATE_Y(radianY))
+  var XZY = product_mat3_mat3(MAT3_ROTATE_X(radianX), ZY)
+  var [x, y, z] = multiply_mat3_vec3(XZY, point)
 
-  return new Point3D({...point, x, y, z})
+  return new Point3D({ ...point, x, y, z })
 }
 
-var translate = (from, to) => {
+function translateX(point, x) {
+  var x = point.x + x
+  return new Point3D({ ...point, x })
+}
+
+function translateY(point, y) {
+  var y = point.y + y
+  return new Point3D({ ...point, y })
+}
+
+function translateZ(point, z) {
+  var z = point.z + z
+  return new Point3D({ ...point, z })
+}
+
+function translate(from, to) {
   var [x, y, z] = multiply_mat3_vec3(MAT3_TRANSLATE(from), to)
-  var x = from.x + x
-  var y = from.y + y
-  var z = from.z + z
+  var x = translateX(from, x).x
+  var y = translateY(from, y).y
+  var z = translateZ(from, z).z
   return new Point3D({...from, x, y, z})
 }
 
 var angle = 0
-var angleX = -30
-var angleY = -30
+var angleX = 0
+var angleY = 0
 var angleZ = 0
 var translatedX = VIEW_CENTER.x
 var translatedY = VIEW_CENTER.y
@@ -242,66 +269,30 @@ function loop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
   var cube1 = makeCube()
-  var cube2 = makeCube()
 
   drawCube(
     cube1,
     50,
     angle,
     Vec3(translatedX, translatedY, translatedZ),
-  )
-
-  drawCube(
-    cube2,
-    100,
-    angle + 180,
-    Vec3(translatedX, translatedY, translatedZ)
+    true, true
   )
 
   // requestAnimationFrame(loop)
 }
+loop()
 
-loop(0)
-
-// PC DEVICE
-var lastPositionX = 0, lastPositionY = 0
-canvas.addEventListener('mousedown', (ev) => {
-  lastPositionX = ev.clientX
-  lastPositionY = ev.clientY
-  canvas.style.cursor = 'grabbing'
-  canvas.addEventListener('mousemove', pointerMoved)
-})
-
-canvas.addEventListener('mouseup', () => {
-  canvas.style.cursor = 'pointer'
-  canvas.removeEventListener('mousemove', pointerMoved)
-})
-
-// TOUCH DEVICE
-canvas.addEventListener('pointerdown', (ev) => {
-  lastPositionX = ev.clientX
-  lastPositionY = ev.clientY
-  canvas.addEventListener('pointermove', pointerMoved)
-})
-
-canvas.addEventListener('pointerup', () => {
-  canvas.removeEventListener('pointermove', pointerMoved)
-})
-
-function pointerMoved(ev) {
-  var deltaX = ev.pageX - lastPositionX
-  var deltaY = ev.pageY - lastPositionY
-
-  lastPositionX = ev.pageX
-  lastPositionY = ev.pageY
-
-  angleY -= deltaX * -0.5
-  angleX += deltaY * -0.5
-
+canvas.addEventListener('pointermove', lookAt)
+canvas.addEventListener('mousemove', lookAt)
+function lookAt(ev) {
+  var mouseX = ev.offsetX - VIEW_CENTER.x
+  var mouseY = ev.offsetY - VIEW_CENTER.y
+  angleY = mouseX / 2
+  angleX = -mouseY / 2
   loop()
 }
 
-document.addEventListener('keypress', (e) => {
+document.addEventListener('keypress', function(e) {
   switch (e.keyCode) {
   
   // TRANSLATE X
@@ -366,7 +357,7 @@ document.addEventListener('keypress', (e) => {
 })
 
 // TEST
-test('should do the product 3x3 correctly', () => {
+test('should do the product 3x3 correctly', function() {
   var left = Mat3(
     2, 7, 3,
     1, 5, 8,
